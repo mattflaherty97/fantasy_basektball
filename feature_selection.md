@@ -1,42 +1,7 @@
 Feature Selection
 ================
 
-``` r
-library(tidyverse)
-```
-
-    ## -- Attaching packages ---------------------------------------------------------- tidyverse 1.3.0 --
-
-    ## v ggplot2 3.3.2     v purrr   0.3.4
-    ## v tibble  3.0.3     v dplyr   1.0.2
-    ## v tidyr   1.1.2     v stringr 1.4.0
-    ## v readr   1.3.1     v forcats 0.5.0
-
-    ## -- Conflicts ------------------------------------------------------------- tidyverse_conflicts() --
-    ## x dplyr::filter() masks stats::filter()
-    ## x dplyr::lag()    masks stats::lag()
-
-``` r
-library(readr)
-library(factoextra)
-```
-
-    ## Welcome! Want to learn more? See two factoextra-related books at https://goo.gl/ve3WBa
-
-``` r
-fantasy <- read_csv("./data/fantasy.csv", col_types = cols(X1 = col_skip()))
-```
-
-    ## Warning: Missing column names filled in: 'X1' [1]
-
 # Delete any non-numeric variables
-
-``` r
-fantasy <- as.data.frame(fantasy)
-
-fantasy <- fantasy %>%
-  select(-player,-pos.x,-tm.x)
-```
 
 # 1\. Confirm that the data is metric
 
@@ -241,8 +206,303 @@ correlation matrix to observe the correlation between variables.
 thecor = round(cor(fantasy),2)
 colnames(thecor)<-colnames(fantasy)
 rownames(thecor)<-colnames(fantasy)
-cor_frame <- round(thecor,2)
+round(thecor,2)
 ```
+
+    ##             age.x   g.x    gs  mp.x    fg   fga fg_percent   x3p  x3pa
+    ## age.x        1.00  0.14  0.08  0.13  0.01 -0.01       0.02  0.14  0.11
+    ## g.x          0.14  1.00  0.59  0.88  0.26  0.12       0.30  0.15  0.01
+    ## gs           0.08  0.59  1.00  0.83  0.42  0.33       0.23  0.14  0.05
+    ## mp.x         0.13  0.88  0.83  1.00  0.43  0.33       0.25  0.23  0.11
+    ## fg           0.01  0.26  0.42  0.43  1.00  0.86       0.50  0.19  0.11
+    ## fga         -0.01  0.12  0.33  0.33  0.86  1.00       0.01  0.38  0.42
+    ## fg_percent   0.02  0.30  0.23  0.25  0.50  0.01       1.00 -0.25 -0.47
+    ## x3p          0.14  0.15  0.14  0.23  0.19  0.38      -0.25  1.00  0.91
+    ## x3pa         0.11  0.01  0.05  0.11  0.11  0.42      -0.47  0.91  1.00
+    ## x3p_percent  0.09  0.20  0.16  0.23  0.17  0.14       0.08  0.58  0.36
+    ## x2p         -0.07  0.17  0.32  0.28  0.85  0.61       0.61 -0.35 -0.39
+    ## x2pa        -0.09  0.12  0.31  0.26  0.81  0.73       0.37 -0.30 -0.32
+    ## x2p_percent  0.03  0.18  0.13  0.14  0.33 -0.06       0.77 -0.21 -0.25
+    ## ft          -0.01  0.11  0.29  0.28  0.57  0.57       0.15  0.01  0.02
+    ## fta         -0.05  0.06  0.26  0.22  0.58  0.55       0.21 -0.11 -0.09
+    ## ft_percent   0.14  0.21  0.18  0.25  0.15  0.21      -0.09  0.35  0.29
+    ## orb         -0.09  0.00  0.01 -0.07  0.16 -0.11       0.51 -0.55 -0.59
+    ## drb          0.01  0.09  0.13  0.07  0.27  0.10       0.38 -0.31 -0.31
+    ## trb         -0.03  0.06  0.10  0.03  0.26  0.03       0.47 -0.43 -0.45
+    ## ast          0.12  0.10  0.21  0.23  0.25  0.31      -0.06  0.06  0.05
+    ## stl         -0.04 -0.03  0.04  0.02 -0.05 -0.04      -0.04 -0.13 -0.11
+    ## blk         -0.04  0.06  0.06  0.00  0.12 -0.08       0.38 -0.32 -0.36
+    ## tov         -0.03  0.02  0.19  0.15  0.39  0.46       0.04 -0.09 -0.03
+    ## pf          -0.09 -0.23 -0.28 -0.36 -0.13 -0.25       0.19 -0.34 -0.33
+    ## pts          0.04  0.26  0.43  0.45  0.95  0.89       0.36  0.35  0.27
+    ## o_rtg        0.14  0.36  0.26  0.34  0.38 -0.01       0.76  0.11 -0.14
+    ## d_rtg       -0.03 -0.11 -0.12 -0.08 -0.14  0.00      -0.28  0.25  0.26
+    ## fpts_100     0.09  0.29  0.39  0.38  0.66  0.38       0.62 -0.11 -0.25
+    ## per          0.09  0.36  0.45  0.47  0.81  0.50       0.70  0.06 -0.13
+    ## ts_percent   0.12  0.39  0.28  0.36  0.46  0.05       0.85  0.18 -0.09
+    ## x3p_ar       0.13 -0.05 -0.10 -0.05 -0.36 -0.09      -0.56  0.76  0.83
+    ## f_tr        -0.05 -0.04  0.04  0.01  0.11 -0.02       0.24 -0.39 -0.40
+    ## orb_percent -0.09  0.00  0.00 -0.07  0.16 -0.11       0.52 -0.55 -0.59
+    ## drb_percent  0.01  0.08  0.13  0.07  0.27  0.10       0.37 -0.31 -0.31
+    ## trb_percent -0.03  0.06  0.10  0.03  0.26  0.03       0.47 -0.43 -0.45
+    ## ast_percent  0.11  0.11  0.25  0.27  0.36  0.42      -0.01  0.09  0.09
+    ## stl_percent -0.04 -0.03  0.04  0.02 -0.05 -0.04      -0.04 -0.13 -0.11
+    ## blk_percent -0.03  0.05  0.06 -0.01  0.12 -0.08       0.38 -0.31 -0.35
+    ## tov_percent  0.00 -0.06 -0.04 -0.08 -0.18 -0.23       0.05 -0.33 -0.31
+    ## usg_percent -0.02  0.11  0.34  0.32  0.85  0.96       0.06  0.26  0.31
+    ## ows          0.17  0.53  0.62  0.67  0.53  0.33       0.43  0.13  0.02
+    ## dws          0.13  0.70  0.72  0.80  0.40  0.25       0.33  0.04 -0.06
+    ## ws           0.17  0.64  0.71  0.78  0.53  0.33       0.43  0.11 -0.01
+    ## ws_48        0.14  0.38  0.34  0.39  0.50  0.10       0.74  0.06 -0.19
+    ## obpm         0.17  0.45  0.50  0.57  0.73  0.49       0.55  0.37  0.15
+    ## dbpm         0.07  0.17  0.13  0.13 -0.03 -0.27       0.35 -0.22 -0.31
+    ## bpm          0.17  0.44  0.47  0.53  0.60  0.30       0.60  0.22  0.00
+    ## vorp         0.15  0.40  0.60  0.60  0.57  0.44       0.31  0.17  0.09
+    ##             x3p_percent   x2p  x2pa x2p_percent    ft   fta ft_percent   orb
+    ## age.x              0.09 -0.07 -0.09        0.03 -0.01 -0.05       0.14 -0.09
+    ## g.x                0.20  0.17  0.12        0.18  0.11  0.06       0.21  0.00
+    ## gs                 0.16  0.32  0.31        0.13  0.29  0.26       0.18  0.01
+    ## mp.x               0.23  0.28  0.26        0.14  0.28  0.22       0.25 -0.07
+    ## fg                 0.17  0.85  0.81        0.33  0.57  0.58       0.15  0.16
+    ## fga                0.14  0.61  0.73       -0.06  0.57  0.55       0.21 -0.11
+    ## fg_percent         0.08  0.61  0.37        0.77  0.15  0.21      -0.09  0.51
+    ## x3p                0.58 -0.35 -0.30       -0.21  0.01 -0.11       0.35 -0.55
+    ## x3pa               0.36 -0.39 -0.32       -0.25  0.02 -0.09       0.29 -0.59
+    ## x3p_percent        1.00 -0.15 -0.13       -0.08 -0.02 -0.11       0.24 -0.33
+    ## x2p               -0.15  1.00  0.94        0.42  0.54  0.61      -0.04  0.45
+    ## x2pa              -0.13  0.94  1.00        0.12  0.59  0.64       0.00  0.33
+    ## x2p_percent       -0.08  0.42  0.12        1.00  0.04  0.09      -0.11  0.35
+    ## ft                -0.02  0.54  0.59        0.04  1.00  0.95       0.31  0.13
+    ## fta               -0.11  0.61  0.64        0.09  0.95  1.00       0.07  0.24
+    ## ft_percent         0.24 -0.04  0.00       -0.11  0.31  0.07       1.00 -0.25
+    ## orb               -0.33  0.45  0.33        0.35  0.13  0.24      -0.25  1.00
+    ## drb               -0.16  0.42  0.34        0.28  0.17  0.28      -0.19  0.61
+    ## trb               -0.25  0.48  0.37        0.34  0.17  0.29      -0.24  0.82
+    ## ast                0.07  0.20  0.29       -0.12  0.27  0.23       0.14 -0.28
+    ## stl               -0.09  0.02  0.04       -0.06 -0.02  0.00      -0.08 -0.05
+    ## blk               -0.15  0.29  0.19        0.29  0.08  0.15      -0.16  0.52
+    ## tov               -0.08  0.42  0.50       -0.03  0.49  0.52       0.02  0.04
+    ## pf                -0.22  0.06 -0.01        0.16 -0.10  0.00      -0.27  0.42
+    ## pts                0.24  0.72  0.72        0.21  0.72  0.69       0.28  0.04
+    ## o_rtg              0.30  0.30  0.09        0.57  0.22  0.18       0.22  0.31
+    ## d_rtg              0.14 -0.27 -0.20       -0.22 -0.06 -0.15       0.18 -0.39
+    ## fpts_100           0.05  0.69  0.59        0.41  0.47  0.49       0.09  0.43
+    ## per                0.17  0.74  0.62        0.47  0.58  0.57       0.19  0.39
+    ## ts_percent         0.37  0.34  0.12        0.66  0.25  0.21       0.22  0.24
+    ## x3p_ar             0.35 -0.74 -0.73       -0.25 -0.30 -0.41       0.22 -0.61
+    ## f_tr              -0.27  0.32  0.28        0.14  0.68  0.77      -0.07  0.38
+    ## orb_percent       -0.33  0.45  0.33        0.36  0.13  0.24      -0.25  1.00
+    ## drb_percent       -0.17  0.42  0.34        0.28  0.17  0.28      -0.19  0.61
+    ## trb_percent       -0.25  0.48  0.37        0.34  0.17  0.29      -0.24  0.82
+    ## ast_percent        0.08  0.30  0.37       -0.08  0.35  0.31       0.15 -0.25
+    ## stl_percent       -0.09  0.02  0.04       -0.06 -0.02  0.00      -0.08 -0.05
+    ## blk_percent       -0.15  0.29  0.19        0.29  0.08  0.14      -0.16  0.52
+    ## tov_percent       -0.18  0.00  0.00        0.04  0.02  0.05      -0.13  0.10
+    ## usg_percent        0.08  0.67  0.77       -0.04  0.71  0.70       0.18 -0.04
+    ## ows                0.15  0.43  0.34        0.31  0.50  0.46       0.22  0.17
+    ## dws                0.11  0.36  0.31        0.22  0.29  0.29       0.11  0.16
+    ## ws                 0.14  0.44  0.35        0.30  0.46  0.43       0.20  0.18
+    ## ws_48              0.23  0.44  0.24        0.54  0.33  0.30       0.19  0.38
+    ## obpm               0.37  0.50  0.40        0.36  0.49  0.42       0.32  0.13
+    ## dbpm              -0.01  0.09 -0.04        0.29 -0.08 -0.04      -0.10  0.19
+    ## bpm                0.30  0.45  0.32        0.42  0.38  0.33       0.23  0.18
+    ## vorp               0.13  0.45  0.39        0.22  0.53  0.50       0.17  0.10
+    ##               drb   trb   ast   stl   blk   tov    pf   pts o_rtg d_rtg
+    ## age.x        0.01 -0.03  0.12 -0.04 -0.04 -0.03 -0.09  0.04  0.14 -0.03
+    ## g.x          0.09  0.06  0.10 -0.03  0.06  0.02 -0.23  0.26  0.36 -0.11
+    ## gs           0.13  0.10  0.21  0.04  0.06  0.19 -0.28  0.43  0.26 -0.12
+    ## mp.x         0.07  0.03  0.23  0.02  0.00  0.15 -0.36  0.45  0.34 -0.08
+    ## fg           0.27  0.26  0.25 -0.05  0.12  0.39 -0.13  0.95  0.38 -0.14
+    ## fga          0.10  0.03  0.31 -0.04 -0.08  0.46 -0.25  0.89 -0.01  0.00
+    ## fg_percent   0.38  0.47 -0.06 -0.04  0.38  0.04  0.19  0.36  0.76 -0.28
+    ## x3p         -0.31 -0.43  0.06 -0.13 -0.32 -0.09 -0.34  0.35  0.11  0.25
+    ## x3pa        -0.31 -0.45  0.05 -0.11 -0.36 -0.03 -0.33  0.27 -0.14  0.26
+    ## x3p_percent -0.16 -0.25  0.07 -0.09 -0.15 -0.08 -0.22  0.24  0.30  0.14
+    ## x2p          0.42  0.48  0.20  0.02  0.29  0.42  0.06  0.72  0.30 -0.27
+    ## x2pa         0.34  0.37  0.29  0.04  0.19  0.50 -0.01  0.72  0.09 -0.20
+    ## x2p_percent  0.28  0.34 -0.12 -0.06  0.29 -0.03  0.16  0.21  0.57 -0.22
+    ## ft           0.17  0.17  0.27 -0.02  0.08  0.49 -0.10  0.72  0.22 -0.06
+    ## fta          0.28  0.29  0.23  0.00  0.15  0.52  0.00  0.69  0.18 -0.15
+    ## ft_percent  -0.19 -0.24  0.14 -0.08 -0.16  0.02 -0.27  0.28  0.22  0.18
+    ## orb          0.61  0.82 -0.28 -0.05  0.52  0.04  0.42  0.04  0.31 -0.39
+    ## drb          1.00  0.95 -0.16 -0.09  0.47  0.18  0.27  0.19  0.17 -0.56
+    ## trb          0.95  1.00 -0.22 -0.08  0.53  0.14  0.35  0.15  0.24 -0.55
+    ## ast         -0.16 -0.22  1.00  0.26 -0.23  0.54 -0.23  0.28  0.05  0.03
+    ## stl         -0.09 -0.08  0.26  1.00 -0.03  0.16  0.00 -0.07 -0.10 -0.37
+    ## blk          0.47  0.53 -0.23 -0.03  1.00  0.04  0.37  0.05  0.18 -0.50
+    ## tov          0.18  0.14  0.54  0.16  0.04  1.00  0.06  0.42 -0.25 -0.15
+    ## pf           0.27  0.35 -0.23  0.00  0.37  0.06  1.00 -0.20 -0.03 -0.21
+    ## pts          0.19  0.15  0.28 -0.07  0.05  0.42 -0.20  1.00  0.37 -0.07
+    ## o_rtg        0.17  0.24  0.05 -0.10  0.18 -0.25 -0.03  0.37  1.00 -0.11
+    ## d_rtg       -0.56 -0.55  0.03 -0.37 -0.50 -0.15 -0.21 -0.07 -0.11  1.00
+    ## fpts_100     0.51  0.53  0.45  0.26  0.45  0.32  0.04  0.61  0.60 -0.49
+    ## per          0.39  0.43  0.30  0.10  0.32  0.23 -0.10  0.79  0.73 -0.33
+    ## ts_percent   0.20  0.23 -0.05 -0.11  0.21 -0.03  0.02  0.46  0.89 -0.12
+    ## x3p_ar      -0.40 -0.52 -0.11 -0.10 -0.37 -0.29 -0.25 -0.20 -0.17  0.30
+    ## f_tr         0.25  0.33  0.04  0.04  0.22  0.27  0.20  0.20  0.21 -0.17
+    ## orb_percent  0.61  0.82 -0.28 -0.05  0.52  0.04  0.42  0.04  0.31 -0.40
+    ## drb_percent  1.00  0.95 -0.17 -0.08  0.46  0.18  0.27  0.18  0.16 -0.54
+    ## trb_percent  0.95  1.00 -0.22 -0.08  0.54  0.15  0.36  0.15  0.24 -0.55
+    ## ast_percent -0.13 -0.19  0.99  0.24 -0.22  0.58 -0.24  0.39  0.08  0.02
+    ## stl_percent -0.09 -0.08  0.26  1.00 -0.03  0.16  0.00 -0.07 -0.10 -0.37
+    ## blk_percent  0.46  0.53 -0.23 -0.03  1.00  0.03  0.38  0.05  0.18 -0.49
+    ## tov_percent  0.09  0.10  0.37  0.22  0.09  0.71  0.25 -0.20 -0.29 -0.15
+    ## usg_percent  0.16  0.10  0.39  0.00 -0.03  0.64 -0.19  0.89 -0.03 -0.06
+    ## ows          0.22  0.22  0.24  0.00  0.13  0.15 -0.22  0.57  0.55 -0.20
+    ## dws          0.34  0.30  0.18  0.15  0.25  0.19 -0.17  0.40  0.34 -0.53
+    ## ws           0.29  0.27  0.24  0.06  0.19  0.18 -0.22  0.55  0.52 -0.35
+    ## ws_48        0.30  0.36  0.12  0.05  0.31 -0.12 -0.01  0.48  0.89 -0.40
+    ## obpm         0.17  0.17  0.32 -0.01  0.11  0.10 -0.35  0.77  0.75 -0.12
+    ## dbpm         0.30  0.29  0.11  0.55  0.43 -0.05  0.19 -0.09  0.31 -0.72
+    ## bpm          0.26  0.26  0.31  0.20  0.26  0.06 -0.22  0.61  0.75 -0.38
+    ## vorp         0.28  0.24  0.36  0.15  0.16  0.30 -0.23  0.61  0.40 -0.35
+    ##             fpts_100   per ts_percent x3p_ar  f_tr orb_percent drb_percent
+    ## age.x           0.09  0.09       0.12   0.13 -0.05       -0.09        0.01
+    ## g.x             0.29  0.36       0.39  -0.05 -0.04        0.00        0.08
+    ## gs              0.39  0.45       0.28  -0.10  0.04        0.00        0.13
+    ## mp.x            0.38  0.47       0.36  -0.05  0.01       -0.07        0.07
+    ## fg              0.66  0.81       0.46  -0.36  0.11        0.16        0.27
+    ## fga             0.38  0.50       0.05  -0.09 -0.02       -0.11        0.10
+    ## fg_percent      0.62  0.70       0.85  -0.56  0.24        0.52        0.37
+    ## x3p            -0.11  0.06       0.18   0.76 -0.39       -0.55       -0.31
+    ## x3pa           -0.25 -0.13      -0.09   0.83 -0.40       -0.59       -0.31
+    ## x3p_percent     0.05  0.17       0.37   0.35 -0.27       -0.33       -0.17
+    ## x2p             0.69  0.74       0.34  -0.74  0.32        0.45        0.42
+    ## x2pa            0.59  0.62       0.12  -0.73  0.28        0.33        0.34
+    ## x2p_percent     0.41  0.47       0.66  -0.25  0.14        0.36        0.28
+    ## ft              0.47  0.58       0.25  -0.30  0.68        0.13        0.17
+    ## fta             0.49  0.57       0.21  -0.41  0.77        0.24        0.28
+    ## ft_percent      0.09  0.19       0.22   0.22 -0.07       -0.25       -0.19
+    ## orb             0.43  0.39       0.24  -0.61  0.38        1.00        0.61
+    ## drb             0.51  0.39       0.20  -0.40  0.25        0.61        1.00
+    ## trb             0.53  0.43       0.23  -0.52  0.33        0.82        0.95
+    ## ast             0.45  0.30      -0.05  -0.11  0.04       -0.28       -0.17
+    ## stl             0.26  0.10      -0.11  -0.10  0.04       -0.05       -0.08
+    ## blk             0.45  0.32       0.21  -0.37  0.22        0.52        0.46
+    ## tov             0.32  0.23      -0.03  -0.29  0.27        0.04        0.18
+    ## pf              0.04 -0.10       0.02  -0.25  0.20        0.42        0.27
+    ## pts             0.61  0.79       0.46  -0.20  0.20        0.04        0.18
+    ## o_rtg           0.60  0.73       0.89  -0.17  0.21        0.31        0.16
+    ## d_rtg          -0.49 -0.33      -0.12   0.30 -0.17       -0.40       -0.54
+    ## fpts_100        1.00  0.92       0.54  -0.49  0.30        0.43        0.50
+    ## per             0.92  1.00       0.70  -0.42  0.32        0.39        0.39
+    ## ts_percent      0.54  0.70       1.00  -0.15  0.20        0.24        0.19
+    ## x3p_ar         -0.49 -0.42      -0.15   1.00 -0.46       -0.61       -0.40
+    ## f_tr            0.30  0.32       0.20  -0.46  1.00        0.38        0.26
+    ## orb_percent     0.43  0.39       0.24  -0.61  0.38        1.00        0.61
+    ## drb_percent     0.50  0.39       0.19  -0.40  0.26        0.61        1.00
+    ## trb_percent     0.53  0.43       0.24  -0.52  0.33        0.82        0.95
+    ## ast_percent     0.50  0.38       0.00  -0.13  0.07       -0.25       -0.13
+    ## stl_percent     0.26  0.10      -0.11  -0.10  0.04       -0.05       -0.08
+    ## blk_percent     0.45  0.32       0.22  -0.36  0.22        0.52        0.46
+    ## tov_percent     0.07 -0.11      -0.08  -0.24  0.19        0.10        0.09
+    ## usg_percent     0.44  0.53       0.07  -0.20  0.17       -0.04        0.16
+    ## ows             0.60  0.70       0.52  -0.17  0.26        0.17        0.21
+    ## dws             0.55  0.54       0.35  -0.18  0.12        0.16        0.32
+    ## ws              0.64  0.70       0.50  -0.19  0.23        0.18        0.28
+    ## ws_48           0.78  0.86       0.81  -0.27  0.26        0.39        0.28
+    ## obpm            0.75  0.90       0.71  -0.11  0.13        0.13        0.16
+    ## dbpm            0.52  0.34       0.27  -0.19  0.10        0.19        0.28
+    ## bpm             0.84  0.89       0.71  -0.16  0.15        0.18        0.25
+    ## vorp            0.67  0.70       0.39  -0.14  0.23        0.10        0.27
+    ##             trb_percent ast_percent stl_percent blk_percent tov_percent
+    ## age.x             -0.03        0.11       -0.04       -0.03        0.00
+    ## g.x                0.06        0.11       -0.03        0.05       -0.06
+    ## gs                 0.10        0.25        0.04        0.06       -0.04
+    ## mp.x               0.03        0.27        0.02       -0.01       -0.08
+    ## fg                 0.26        0.36       -0.05        0.12       -0.18
+    ## fga                0.03        0.42       -0.04       -0.08       -0.23
+    ## fg_percent         0.47       -0.01       -0.04        0.38        0.05
+    ## x3p               -0.43        0.09       -0.13       -0.31       -0.33
+    ## x3pa              -0.45        0.09       -0.11       -0.35       -0.31
+    ## x3p_percent       -0.25        0.08       -0.09       -0.15       -0.18
+    ## x2p                0.48        0.30        0.02        0.29        0.00
+    ## x2pa               0.37        0.37        0.04        0.19        0.00
+    ## x2p_percent        0.34       -0.08       -0.06        0.29        0.04
+    ## ft                 0.17        0.35       -0.02        0.08        0.02
+    ## fta                0.29        0.31        0.00        0.14        0.05
+    ## ft_percent        -0.24        0.15       -0.08       -0.16       -0.13
+    ## orb                0.82       -0.25       -0.05        0.52        0.10
+    ## drb                0.95       -0.13       -0.09        0.46        0.09
+    ## trb                1.00       -0.19       -0.08        0.53        0.10
+    ## ast               -0.22        0.99        0.26       -0.23        0.37
+    ## stl               -0.08        0.24        1.00       -0.03        0.22
+    ## blk                0.54       -0.22       -0.03        1.00        0.09
+    ## tov                0.15        0.58        0.16        0.03        0.71
+    ## pf                 0.36       -0.24        0.00        0.38        0.25
+    ## pts                0.15        0.39       -0.07        0.05       -0.20
+    ## o_rtg              0.24        0.08       -0.10        0.18       -0.29
+    ## d_rtg             -0.55        0.02       -0.37       -0.49       -0.15
+    ## fpts_100           0.53        0.50        0.26        0.45        0.07
+    ## per                0.43        0.38        0.10        0.32       -0.11
+    ## ts_percent         0.24        0.00       -0.11        0.22       -0.08
+    ## x3p_ar            -0.52       -0.13       -0.10       -0.36       -0.24
+    ## f_tr               0.33        0.07        0.04        0.22        0.19
+    ## orb_percent        0.82       -0.25       -0.05        0.52        0.10
+    ## drb_percent        0.95       -0.13       -0.08        0.46        0.09
+    ## trb_percent        1.00       -0.19       -0.08        0.54        0.11
+    ## ast_percent       -0.19        1.00        0.24       -0.21        0.32
+    ## stl_percent       -0.08        0.24        1.00       -0.03        0.22
+    ## blk_percent        0.54       -0.21       -0.03        1.00        0.09
+    ## tov_percent        0.11        0.32        0.22        0.09        1.00
+    ## usg_percent        0.10        0.50        0.00       -0.03       -0.03
+    ## ows                0.22        0.30        0.00        0.12       -0.11
+    ## dws                0.30        0.21        0.15        0.24        0.00
+    ## ws                 0.27        0.29        0.06        0.18       -0.08
+    ## ws_48              0.36        0.17        0.05        0.31       -0.20
+    ## obpm               0.17        0.40       -0.01        0.11       -0.24
+    ## dbpm               0.28        0.10        0.55        0.43        0.16
+    ## bpm                0.25        0.38        0.20        0.26       -0.14
+    ## vorp               0.24        0.43        0.15        0.16       -0.03
+    ##             usg_percent   ows   dws    ws ws_48  obpm  dbpm   bpm  vorp
+    ## age.x             -0.02  0.17  0.13  0.17  0.14  0.17  0.07  0.17  0.15
+    ## g.x                0.11  0.53  0.70  0.64  0.38  0.45  0.17  0.44  0.40
+    ## gs                 0.34  0.62  0.72  0.71  0.34  0.50  0.13  0.47  0.60
+    ## mp.x               0.32  0.67  0.80  0.78  0.39  0.57  0.13  0.53  0.60
+    ## fg                 0.85  0.53  0.40  0.53  0.50  0.73 -0.03  0.60  0.57
+    ## fga                0.96  0.33  0.25  0.33  0.10  0.49 -0.27  0.30  0.44
+    ## fg_percent         0.06  0.43  0.33  0.43  0.74  0.55  0.35  0.60  0.31
+    ## x3p                0.26  0.13  0.04  0.11  0.06  0.37 -0.22  0.22  0.17
+    ## x3pa               0.31  0.02 -0.06 -0.01 -0.19  0.15 -0.31  0.00  0.09
+    ## x3p_percent        0.08  0.15  0.11  0.14  0.23  0.37 -0.01  0.30  0.13
+    ## x2p                0.67  0.43  0.36  0.44  0.44  0.50  0.09  0.45  0.45
+    ## x2pa               0.77  0.34  0.31  0.35  0.24  0.40 -0.04  0.32  0.39
+    ## x2p_percent       -0.04  0.31  0.22  0.30  0.54  0.36  0.29  0.42  0.22
+    ## ft                 0.71  0.50  0.29  0.46  0.33  0.49 -0.08  0.38  0.53
+    ## fta                0.70  0.46  0.29  0.43  0.30  0.42 -0.04  0.33  0.50
+    ## ft_percent         0.18  0.22  0.11  0.20  0.19  0.32 -0.10  0.23  0.17
+    ## orb               -0.04  0.17  0.16  0.18  0.38  0.13  0.19  0.18  0.10
+    ## drb                0.16  0.22  0.34  0.29  0.30  0.17  0.30  0.26  0.28
+    ## trb                0.10  0.22  0.30  0.27  0.36  0.17  0.29  0.26  0.24
+    ## ast                0.39  0.24  0.18  0.24  0.12  0.32  0.11  0.31  0.36
+    ## stl                0.00  0.00  0.15  0.06  0.05 -0.01  0.55  0.20  0.15
+    ## blk               -0.03  0.13  0.25  0.19  0.31  0.11  0.43  0.26  0.16
+    ## tov                0.64  0.15  0.19  0.18 -0.12  0.10 -0.05  0.06  0.30
+    ## pf                -0.19 -0.22 -0.17 -0.22 -0.01 -0.35  0.19 -0.22 -0.23
+    ## pts                0.89  0.57  0.40  0.55  0.48  0.77 -0.09  0.61  0.61
+    ## o_rtg             -0.03  0.55  0.34  0.52  0.89  0.75  0.31  0.75  0.40
+    ## d_rtg             -0.06 -0.20 -0.53 -0.35 -0.40 -0.12 -0.72 -0.38 -0.35
+    ## fpts_100           0.44  0.60  0.55  0.64  0.78  0.75  0.52  0.84  0.67
+    ## per                0.53  0.70  0.54  0.70  0.86  0.90  0.34  0.89  0.70
+    ## ts_percent         0.07  0.52  0.35  0.50  0.81  0.71  0.27  0.71  0.39
+    ## x3p_ar            -0.20 -0.17 -0.18 -0.19 -0.27 -0.11 -0.19 -0.16 -0.14
+    ## f_tr               0.17  0.26  0.12  0.23  0.26  0.13  0.10  0.15  0.23
+    ## orb_percent       -0.04  0.17  0.16  0.18  0.39  0.13  0.19  0.18  0.10
+    ## drb_percent        0.16  0.21  0.32  0.28  0.28  0.16  0.28  0.25  0.27
+    ## trb_percent        0.10  0.22  0.30  0.27  0.36  0.17  0.28  0.25  0.24
+    ## ast_percent        0.50  0.30  0.21  0.29  0.17  0.40  0.10  0.38  0.43
+    ## stl_percent        0.00  0.00  0.15  0.06  0.05 -0.01  0.55  0.20  0.15
+    ## blk_percent       -0.03  0.12  0.24  0.18  0.31  0.11  0.43  0.26  0.16
+    ## tov_percent       -0.03 -0.11  0.00 -0.08 -0.20 -0.24  0.16 -0.14 -0.03
+    ## usg_percent        1.00  0.37  0.29  0.37  0.11  0.47 -0.23  0.31  0.49
+    ## ows                0.37  1.00  0.65  0.95  0.65  0.72  0.20  0.69  0.89
+    ## dws                0.29  0.65  1.00  0.85  0.52  0.52  0.45  0.61  0.74
+    ## ws                 0.37  0.95  0.85  1.00  0.66  0.71  0.32  0.72  0.91
+    ## ws_48              0.11  0.65  0.52  0.66  1.00  0.83  0.53  0.90  0.59
+    ## obpm               0.47  0.72  0.52  0.71  0.83  1.00  0.22  0.93  0.72
+    ## dbpm              -0.23  0.20  0.45  0.32  0.53  0.22  1.00  0.57  0.34
+    ## bpm                0.31  0.69  0.61  0.72  0.90  0.93  0.57  1.00  0.73
+    ## vorp               0.49  0.89  0.74  0.91  0.59  0.72  0.34  0.73  1.00
 
 There are a decent number of variables that are moderately correlated
 with fantasy points and few that have a strong positive correlation with
@@ -873,12 +1133,6 @@ eig_val
     ## Dim.47 3.846717e-05     8.013993e-05                   100.00000
     ## Dim.48 2.958090e-30     6.162687e-30                   100.00000
 
-``` r
-mean(eig_val$eigenvalue)
-```
-
-    ## [1] 1
-
 I could choose eigenvalues greater than than the mean (1); however,
 there are 10 factors with an eigenvalue greater than 1 so I must look
 elsewhere to determine factors
@@ -893,33 +1147,12 @@ I can also make a scree plot to determine the dimensions.
 fviz_eig(pca_out)
 ```
 
-![](feature_selection_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](feature_selection_files/figure-gfm/scree-1.png)<!-- -->
 
 I will choose four factors because this is where the “elbow” is in the
 scree plot.
 
-# 5\. Interpretation
-
-``` r
-fviz_pca_var(pca_out,
-             col.var = "contrib", # Color by contributions to the PC
-             gradient.cols = c("#FAAE7B", "#432371"),
-             repel = TRUE     # Avoid text overlapping
-             )
-```
-
-![](feature_selection_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
-
-``` r
-fviz_pca_biplot(pca_out, repel = TRUE,
-                col.var = "#2E9FDF", # Variables color
-                col.ind = "#696969"  # Individuals color
-                )
-```
-
-![](feature_selection_files/figure-gfm/unnamed-chunk-9-2.png)<!-- -->
-
-# 6\. Save scores
+# 5\. Save scores
 
 I have chosen 4 components so I will plot the contributions of variables
 to each component.
@@ -929,25 +1162,25 @@ to each component.
 fviz_contrib(pca_out, choice = "var", axes = 1, top = 25)
 ```
 
-![](feature_selection_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](feature_selection_files/figure-gfm/component_contribution-1.png)<!-- -->
 
 ``` r
 fviz_contrib(pca_out, choice = "var", axes = 2, top = 25)
 ```
 
-![](feature_selection_files/figure-gfm/unnamed-chunk-10-2.png)<!-- -->
+![](feature_selection_files/figure-gfm/component_contribution-2.png)<!-- -->
 
 ``` r
 fviz_contrib(pca_out, choice = "var", axes = 3, top = 25)
 ```
 
-![](feature_selection_files/figure-gfm/unnamed-chunk-10-3.png)<!-- -->
+![](feature_selection_files/figure-gfm/component_contribution-3.png)<!-- -->
 
 ``` r
 fviz_contrib(pca_out, choice = "var", axes = 4, top = 20)
 ```
 
-![](feature_selection_files/figure-gfm/unnamed-chunk-10-4.png)<!-- -->
+![](feature_selection_files/figure-gfm/component_contribution-4.png)<!-- -->
 
 I did this analysis to see if there were any features that I may use to
 decide which players to pick for my fantasy team. Dimension 1 contains
@@ -956,15 +1189,74 @@ which variables also contribute much to the same dimension as fantasy
 points to determine the features that may be used to determine if
 someone will be productive.
 
-Drafting players based on PER shows to be beneficial as it contributes
-the most to the first dimension. I can also see that PER is highly
-correlated with fantasy points in this plot.
+Drafting players based on player efficiency rating (PER) shows to be
+beneficial as it contributes the most to the first dimension. I can also
+see that PER is highly correlated with fantasy points in this plot.
 
-![caption: PER vs Fantasy
-Points](./data_visualization_files/figure-gfm/per_fpts-1.png)
+``` r
+ggplot(fantasy, aes(per, fpts_100)) +
+  geom_point()+
+  annotate(geom = "text", x = -5, y = -10, label = paste("r = ",format(round(cor(fantasy$per, fantasy$fpts_100),4))), colour = "blue") +
+  labs(
+    title = "Fantasy Points vs PER",
+    x = "PER",
+    y = "Fantasy Points"
+  ) +
+  theme_classic() +
+  geom_smooth(method = "lm") 
+```
+
+    ## `geom_smooth()` using formula 'y ~ x'
+
+![](feature_selection_files/figure-gfm/per_fpts-1.png)<!-- -->
 
 Box plus-minus (BPM) also contributes a lot the first dimension. BPM
 also has a strong correlation to fantasy points.
 
-![Caption: BPM vs Fantasy
-Points](./data_visualization_files/figure-gfm/bpm_fpts-1.png)
+``` r
+ggplot(fantasy, aes(bpm, fpts_100)) +
+  geom_point() +
+  annotate(geom = "text", x = -20, y = -25, label = paste("r = ",format(round(cor(fantasy$bpm, fantasy$fpts_100),4))), colour = "blue") +
+  labs(
+    title = "Fantasy Points vs BPM",
+    x = "BPM",
+    y = "Fantasy Points"
+  ) +
+  theme_classic() +
+  geom_smooth(method = "lm") 
+```
+
+    ## `geom_smooth()` using formula 'y ~ x'
+
+![](feature_selection_files/figure-gfm/bpm_fpts-1.png)<!-- -->
+
+As I continue along the x-axis, the correlation to fantasy points
+decreases. I can show this by choosing points and see that the
+correlation is much smaller than PER and BPM.
+
+``` r
+ggplot(fantasy, aes(pts, fpts_100)) +
+  geom_point()+
+  annotate(geom = "text", x = 45, y = 30, label = paste("r = ",format(round(cor(fantasy$pts, fantasy$fpts_100),4))), colour = "blue") +
+  labs(
+    title = "Fantasy Points vs Points",
+    x = "Points",
+    y = "Fantasy Points"
+  ) +
+  theme_classic() +
+  geom_smooth(method = "lm") 
+```
+
+    ## `geom_smooth()` using formula 'y ~ x'
+
+![](feature_selection_files/figure-gfm/pts_fpts-1.png)<!-- -->
+
+# Conclusion
+
+PER and BPM have the strongest correlation with fantasy points in the
+data set. Therefore, fantasy managers can use these statistics to draft
+their players and should see good production from the players. BPM and
+PER most likely are the strongest correlated variables to fantasy points
+because these features encompass a well-rounded game. In other words,
+players who do well in points, rebound, assists, and defense will a good
+BPM and PER.
