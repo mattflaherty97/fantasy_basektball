@@ -1,18 +1,133 @@
 ---
 title: "Feature Selection"
 output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
-
 ```{r}
-plot(cars)
+library(tidyverse)
+library(readr)
+library(factoextra)
+
+fantasy <- read_csv("./data/fantasy.csv", col_types = cols(X1 = col_skip()))
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+# Delete any non-numeric variables
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+```{r}
+fantasy <- as.data.frame(fantasy)
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+fantasy <- fantasy %>%
+  select(-player,-pos.x,-tm.x)
+```
+
+# 1. Confirm that the data is metric
+
+```{r}
+summary(fantasy)
+```
+
+All of the data has numerical meaning (1 is less than 2 which is less than 3 etc.)
+
+# 2. Scale the data
+
+The columns of my data set do have the same range. Thus, columns with larger maximums or smaller minimums could affect the analysis. Therefore, I will scale the data so all of the columns range from 0 to 1 with a standard deviation of 1.
+
+```{r}
+fantasy_scaled = apply(fantasy,2, function(r) {if (sd(r)!=0) res=(r-mean(r))/sd(r) else res=0*r; res})
+
+summary(fantasy_scaled)
+```
+
+# 3. Check correlations
+
+I need large correlations (>0.5) because the grouping that I am doing groups raw attributes that are highly correlated. Thus, I will use the correlation matrix to observe the correlation between variables.
+
+```{r}
+thecor = round(cor(fantasy),2)
+colnames(thecor)<-colnames(fantasy)
+rownames(thecor)<-colnames(fantasy)
+cor_frame <- round(thecor,2)
+```
+
+There are a decent number of variables that are moderately correlated with fantasy points and few that have a strong positive correlation with fantasy points such as PER and BPM. Maybe these can be grouped together.
+
+# 4. Choose number of components
+
+I use PCA to generate derived variables from the raw data. Thus, I can capture most of the data in just a few factors.
+
+```{r}
+# conduct PCA analysis with prcomp function
+# creats PCA output object
+pca_out = prcomp(fantasy, scale = TRUE)
+
+# now that we have checked that
+# we can dive into the PCA results a bit more
+# this "get_pca_var" gives us the PCA information for the variables in our data
+res_var = get_pca_var(pca_out)
+
+# look at PCA coordinates 
+res_var$coord
+```
+
+By looking at these coordinates we can 'see' where the data is 'loading' on the PCA projection. There are currently as many factors as features so now the work begins on reducing dimensions while trying to keep as much information as possible. 
+
+To see how much of the raw data is captured by the factors, I will be using the *percentage of variance explained* by components and the *eigenvalue coresponding to the component*. The sum of percents is 100% and the number of eigenvalues is equal to the original number of features. 
+
+```{r}
+eig_val = get_eigenvalue(pca_out)
+eig_val
+mean(eig_val$eigenvalue)
+```
+
+I could choose eigenvalues greater than than the mean (1); however, there are 10 factors with an eigenvalue greater than 1 so I must look elsewhere to determine factors
+
+# Visualize
+
+I can also make a scree plot to determine the dimensions.
+
+```{r}
+# visualize and inspect results
+# factoextra package
+fviz_eig(pca_out)
+```
+
+I will choose four factors because this is where the "elbow" is in the scree plot.
+
+# 5. Interpretation
+
+```{r}
+fviz_pca_var(pca_out,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#FAAE7B", "#432371"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+fviz_pca_biplot(pca_out, repel = TRUE,
+                col.var = "#2E9FDF", # Variables color
+                col.ind = "#696969"  # Individuals color
+                )
+```
+
+# 6. Save scores
+
+I have chosen 4 components so I will plot the contributions of variables to each component.
+
+```{r}
+# Contributions of variables to PC1
+fviz_contrib(pca_out, choice = "var", axes = 1, top = 25)
+fviz_contrib(pca_out, choice = "var", axes = 2, top = 25)
+fviz_contrib(pca_out, choice = "var", axes = 3, top = 25)
+fviz_contrib(pca_out, choice = "var", axes = 4, top = 20)
+```
+
+I did this analysis to see if there were any features that I may use to decide which players to pick for my fantasy team. Dimension 1 contains the variable of interest, fantasy points (fpts_100). Thus, I can see which variables also contribute much to the same dimension as fantasy points to determine the features that may be used to determine if someone will be productive.
+
+Drafting players based on PER shows to be beneficial as it contributes the most to the first dimension. I can also see that PER is highly correlated with fantasy points in this plot. 
+
+![caption: PER vs Fantasy Points](./data_visualization_files/figure-gfm/per_fpts-1.png)
+
+Box plus-minus (BPM) also contributes a lot the first dimension. BPM also has a strong correlation to fantasy points.
+
+![Caption: BPM vs Fantasy Points](./data_visualization_files/figure-gfm/bpm_fpts-1.png)

@@ -12,13 +12,13 @@ library(readr)
 fantasy <- read_csv("data/fantasy.csv")
 ```
 
-```{r}
+```{r bpm_fpts}
 ggplot(fantasy, aes(bpm, fpts_100)) +
   geom_point()
 cor(fantasy$bpm, fantasy$fpts_100)
 ```
 
-```{r}
+```{r per_fpts}
 ggplot(fantasy, aes(per, fpts_100)) +
   geom_point()
 cor(fantasy$per, fantasy$fpts_100)
