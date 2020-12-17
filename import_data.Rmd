@@ -1,0 +1,123 @@
+---
+title: "Import Data"
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Necessary Packages
+
+```{r}
+library(readr)
+library(tidyverse)
+library(janitor)
+```
+
+#Load Data
+
+2020
+```{r}
+nba100_2020 <- read_csv("data/nba100_2020.csv")
+nba100_2020 <- clean_names(nba100_2020)
+
+nba100_2020 <- nba100_2020[!duplicated(nba100_2020$player),]
+```
+
+2019
+```{r}
+nba100_2019 <- read_csv("data/nba100_2019.csv")
+nba100_2019 <- clean_names(nba100_2019)
+
+nba100_2019 <- nba100_2019[!duplicated(nba100_2019$player),]
+```
+
+2018
+```{r}
+nba100_2018 <- read_csv("data/nba100_2018.csv")
+nba100_2018 <- clean_names(nba100_2018)
+
+nba100_2018 <- nba100_2018[!duplicated(nba100_2018$player),]
+```
+
+# Add fantasy points to data set
+
+```{r}
+nba100_2020 <- nba100_2020 %>%
+  mutate(fpts_100 = fg +(fga*-1) + ft + (fta*-1) + trb + (ast*2) + (stl*3) + (blk*3) + (tov*-2) + pts)
+
+nba100_2019 <- nba100_2019 %>%
+  mutate(fpts_100 = fg +(fga*-1) + ft + (fta*-1) + trb + (ast*2) + (stl*3) + (blk*3) + (tov*-2) + pts)
+
+nba100_2018 <- nba100_2018 %>%
+  mutate(fpts_100 = fg +(fga*-1) + ft + (fta*-1) + trb + (ast*2) + (stl*3) + (blk*3) + (tov*-2) + pts)
+```
+
+
+# Load advanced stats
+
+2020
+```{r}
+nba_advanced_2020 <- read_csv("data/nba_advanced_2020.csv")
+nba_advanced_2020 <- clean_names(nba_advanced_2020)
+
+nba_advanced_2020 <- nba_advanced_2020[!duplicated(nba_advanced_2020$player),]
+```
+
+2019
+```{r}
+nba_advanced_2019 <- read_csv("data/nba_advanced_2019.csv")
+nba_advanced_2019 <- clean_names(nba_advanced_2019)
+
+nba_advanced_2019 <- nba_advanced_2019[!duplicated(nba_advanced_2019$player),]
+```
+
+2018
+```{r}
+nba_advanced_2018 <- read_csv("data/nba_advanced_2018.csv")
+nba_advanced_2018 <- clean_names(nba_advanced_2018)
+
+nba_advanced_2018 <- nba_advanced_2018[!duplicated(nba_advanced_2018$player),]
+```
+
+# Join data
+
+2020
+```{r}
+nba_fantasy_2020 <- left_join(nba100_2020, nba_advanced_2020, by = "player")
+```
+
+2019
+```{r}
+nba_fantasy_2019 <- left_join(nba100_2019, nba_advanced_2019, by = "player")
+```
+
+2018
+```{r}
+nba_fantasy_2018 <- left_join(nba100_2018, nba_advanced_2018, by = "player")
+```
+
+append data
+```{r}
+fantasy <- rbind(nba_fantasy_2020, nba_fantasy_2019)
+fantasy <- rbind(fantasy, nba_fantasy_2018)
+```
+
+# delete empty columns
+
+```{r}
+fantasy <- fantasy %>%
+  select(-x29, -pos.y, -age.y, -tm.y, -g.y, -mp.y, -x19, -x24)
+```
+
+delete NA values
+```{r}
+fantasy <- fantasy[complete.cases(fantasy),]
+```
+
+
+# Write new, updated csv
+
+```{r}
+write.csv(fantasy, "data/fantasy.csv")
+```
+

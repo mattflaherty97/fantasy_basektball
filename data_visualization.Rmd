@@ -1,0 +1,26 @@
+---
+title: "Data Visualization"
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+library(readr)
+
+fantasy <- read_csv("data/fantasy.csv")
+```
+
+```{r}
+ggplot(fantasy, aes(bpm, fpts_100)) +
+  geom_point()
+cor(fantasy$bpm, fantasy$fpts_100)
+```
+
+```{r}
+ggplot(fantasy, aes(per, fpts_100)) +
+  geom_point()
+cor(fantasy$per, fantasy$fpts_100)
+```
+
