@@ -114,6 +114,7 @@ delete NA values
 fantasy <- fantasy[complete.cases(fantasy),]
 ```
 
+# Delete any non-numeric variables
 
 # Write new, updated csv
 
