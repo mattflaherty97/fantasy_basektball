@@ -21,6 +21,9 @@ nba100_2020 <- read_csv("data/nba100_2020.csv")
 nba100_2020 <- clean_names(nba100_2020)
 
 nba100_2020 <- nba100_2020[!duplicated(nba100_2020$player),]
+
+nba100_2020 <- nba100_2020 %>%
+  mutate(year = "2020")
 ```
 
 2019
@@ -29,6 +32,9 @@ nba100_2019 <- read_csv("data/nba100_2019.csv")
 nba100_2019 <- clean_names(nba100_2019)
 
 nba100_2019 <- nba100_2019[!duplicated(nba100_2019$player),]
+
+nba100_2019 <- nba100_2019 %>%
+  mutate(year = "2019")
 ```
 
 2018
@@ -37,6 +43,9 @@ nba100_2018 <- read_csv("data/nba100_2018.csv")
 nba100_2018 <- clean_names(nba100_2018)
 
 nba100_2018 <- nba100_2018[!duplicated(nba100_2018$player),]
+
+nba100_2018 <- nba100_2018 %>%
+  mutate(year = "2018")
 ```
 
 # Add fantasy points to data set

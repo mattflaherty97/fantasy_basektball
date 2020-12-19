@@ -1,0 +1,93 @@
+---
+title: "Modeling"
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Prepare data 
+
+```{r}
+library(tidyverse)
+library(readr)
+library(h2o)
+library(glue)
+library(lemon)
+knit_print.data.frame <- lemon_print
+library(knitr)
+h2o.init(nthreads = -1, #Number of threads -1 means use all cores on your machine
+         max_mem_size = "8G")  #max mem size is the maximum memory to allocate to H2O
+
+fantasy <- read_csv("../data/fantasy.csv")
+fantasy <- as.data.frame(fantasy)
+
+# no non-numeric data
+fantasy <- fantasy %>%
+  select(-X1, -pos.x, -tm.x)
+```
+
+Call H2O and split the data.
+
+# Split the data
+
+```{r split}
+test <- fantasy %>%
+  filter(year == "2020") 
+row.names(test) <- test$player
+test <- test %>%
+  select(-player, -year) %>%
+  apply(2, function(r) {if (sd(r)!=0) res=(r-mean(r))/sd(r) else res=0*r; res}) %>%
+  as.data.frame()
+
+train <- fantasy %>%
+  filter(year != "2020") %>%
+  select(-player, - year) %>%
+  apply(2, function(r) {if (sd(r)!=0) res=(r-mean(r))/sd(r) else res=0*r; res}) %>%
+  as.data.frame()
+```
+
+```{r}
+h2o.train_data <- as.h2o(train)
+h2o.test_data <- as.h2o(test)
+
+y <- "fpts_100"
+x <- setdiff(names(train), c(y))
+```
+
+# Run models
+
+```{r rf}
+rf_fit2 <- h2o.glm(x = x,
+                            y = y,
+                            training_frame = h2o.train_data,
+                            model_id = "rf_fit2",
+                            #validation_frame = valid,  #only used if stopping_rounds > 0
+                            nfolds = 10,
+                   alpha = 0.5)
+
+rf_fit2@model$cross_validation_metrics
+```
+
+
+# Calculate value
+
+```{r}
+fpts_predict <- as.data.frame(h2o.predict(rf_fit2, h2o.test_data)) # Predict entire dataset (note that we are not using out-of-bag samples)
+
+outcome <- test %>%
+  select(fpts_100) %>%
+  cbind(fpts_predict) %>%
+  arrange(desc(predict))
+
+head(outcome)
+```
+
+# Top Predictors
+
+```{r}
+h2o.varimp(rf_fit2) %>%
+  select(variable, scaled_importance) %>%
+  mutate(scaled_importance = round(scaled_importance, 2)) %>%
+  head(10) %>%
+  kable()
+```
