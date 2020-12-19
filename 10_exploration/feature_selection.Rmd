@@ -15,7 +15,7 @@ fantasy <- read_csv("./data/fantasy.csv", col_types = cols(X1 = col_skip()))
 
 # Delete any non-numeric variables
 
-```{r delete_vars, include=FALSE}
+```{r delete_vars}
 fantasy <- as.data.frame(fantasy)
 
 fantasy <- fantasy %>%
