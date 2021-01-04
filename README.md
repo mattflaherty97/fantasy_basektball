@@ -8,17 +8,17 @@ I created this repository because I have relied heavily on "experts" year in and
 
 *Describe how I got the data set*
 
-# [Feature Selection](https://github.com/mattflaherty97/fantasy_basketball/blob/main/feature_selection.md)
+# [Feature Selection](https://github.com/mattflaherty97/fantasy_basketball/blob/main/10_exploration/feature_selection.md)
 
 There are about 50 features in this data set after the feature engineering. I want to reduce the dimensions so that I can see which features are similar to `fpts_100`. Therefore, I use Principal Component Analysis (PCA) to achieve this. I reduce the dimension down to four dimensions and find the dimension that contains `fpts_100`.
 
-![Caption: Dimension 1](https://github.com/mattflaherty97/fantasy_basketball/blob/main/feature_selection_files/figure-gfm/component_contribution-1.png)
+![Caption: Dimension 1](https://github.com/mattflaherty97/fantasy_basketball/blob/main/10_exploration/feature_selection_files/figure-gfm/component_contribution-1.png)
 
 The variables closest to `fpts_100` are player efficiency rating (PER) and box plus-minus (BPM). Thus, I believe that these variables can also be used to pick players as they are both highly correlated with `fpts_100`.
 
-![Caption: Fantasy Points vs PER](https://github.com/mattflaherty97/fantasy_basketball/blob/main/feature_selection_files/figure-gfm/per_fpts-1.png)
+![Caption: Fantasy Points vs PER](https://github.com/mattflaherty97/fantasy_basketball/blob/main/10_exploration/feature_selection_files/figure-gfm/per_fpts-1.png)
 
-![Caption: Fantasy Points vs BPM](https://github.com/mattflaherty97/fantasy_basketball/blob/main/feature_selection_files/figure-gfm/bpm_fpts-1.png)
+![Caption: Fantasy Points vs BPM](https://github.com/mattflaherty97/fantasy_basketball/blob/main/10_exploration/feature_selection_files/figure-gfm/bpm_fpts-1.png)
 
 # Conclusion
 
