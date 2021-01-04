@@ -4,9 +4,9 @@
 
 I created this repository because I have relied heavily on "experts" year in and year out. This year, I thought about doing my own analysis using data from 2018-2020. Thus, I can make my own interpretations on what features are key to finding players that will perform well for my fantasy team and my motivating question revolves around this. What features impact a player's fantasy performance the most? Having found key features, I should be able to develop a well-rounded draft that is data driven and potentially choose a league-winning team. In this repository, I want to create my own data set, visualize features, and predict the features with highest importance for fantasy points.
 
-# Feature Engineering
+# [Feature Engineering](https://github.com/mattflaherty97/fantasy_basketball/blob/main/00_feature_engineering/import_data.Rmd)
 
-*Describe how I got the data set*
+This data was collected from [Basketball Reference](https://www.basketball-reference.com/). I use data from 2018-2020 by copying and pasting the data into a .csv file. In order to get the most accurate results, I use player data per 100 possessions as well as advanced statistics from the website. I use data per 100 possessions because games will have varying paces of play. Thus, per 100 possessions will put all players onto the same scale. For example, the Golden State Warriors have been known to play at the fastest pace so their players per game statistics will be inflated as compared to the Memphis Grizzlies who have been known for their slow pace of play. Therefore, looking at player statistics for both teams on a per 100 possessions basis will negate any disparity in the number of possession either team has during the course of a game. I also use advanced statistics because these statistics can determine how a player impacts his team. For example, box plus/minus (BPM) will tell the estimate of the points per 100 possessions a player contributed above a league-average player, translated to an average team. I believe that this will have an impact on fantasy points because the better players in the league usually have higher a BPM.
 
 # [Feature Selection](https://github.com/mattflaherty97/fantasy_basketball/blob/main/10_exploration/feature_selection.md)
 
@@ -22,4 +22,4 @@ The variables closest to `fpts_100` are player efficiency rating (PER) and box p
 
 # Conclusion
 
-*which variables can fantasy managers use to draft players?*
+From this brief analysis, fantasy managers should consider drafting players that are more efficient over players with high usage because the more efficient a player is, then the more fantasy points he ought to have.
