@@ -20,6 +20,10 @@ The variables closest to `fpts_100` are player efficiency rating (PER) and box p
 
 ![Caption: Fantasy Points vs BPM](https://github.com/mattflaherty97/fantasy_basketball/blob/main/10_exploration/feature_selection_files/figure-gfm/bpm_fpts-1.png)
 
+# Cluster Analysis
+
+Having found dimensions that are similar to each other, I can perform a cluster analysis to split the players into tiers. This will be beneficial to managers because they might be able to trade an overhyped player in a low tier for an underrated player in higher tier.
+
 # Conclusion
 
 From this brief analysis, fantasy managers should consider drafting players that are more efficient over players with high usage because the more efficient a player is, then the more fantasy points he ought to have.
