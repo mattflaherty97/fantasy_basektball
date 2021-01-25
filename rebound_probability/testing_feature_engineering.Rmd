@@ -1,0 +1,229 @@
+---
+title: "testin_feature_engineering"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+# Load testing pbp data
+
+```{r}
+testing_data_pbp <- read_csv("testing_data_pbp.csv", 
+    col_types = cols(X1 = col_skip(), away_team_id = col_character(), 
+        def_team_id = col_character(), game_id = col_character(), 
+        home_team_id = col_character(), off_team_id = col_character(), 
+        playbyplayorder_id = col_character(), 
+        shooter_player_id = col_character(),
+        playbyplayorder_id = col_character(), 
+        playerid_off_player_1 = col_character(), 
+        playerid_off_player_2 = col_character(), 
+        playerid_off_player_3 = col_character(), 
+        playerid_off_player_4 = col_character(),
+        playerid_off_player_5 = col_character(),
+        playerid_def_player_1 = col_character(),
+        playerid_def_player_2 = col_character(),
+        playerid_def_player_3 = col_character(),
+        playerid_def_player_4 = col_character(),
+        playerid_def_player_5 = col_character()))
+```
+
+# Load testing location data
+```{r}
+testing_data_loc <- read_csv("testing_data_loc.csv", 
+    col_types = cols(X1 = col_skip(), game_id = col_character(),
+                     playbyplayorder_id = col_character()))
+```
+
+# join for offense (test)
+
+I am going to join the data sets. If a guy has a lot of rebounds and he is one the guys on the court, then the model will say that the offense has a higher probability of getting the rebound
+
+I need the rebounding statistics of each player on the court so the model can learn the effect of each player on getting the offensive rebound. In other words, it will learn that the offensive rebounding statistics column posititvely affects the outcome variable. Vice versa for defensive players rebounding statistics.
+
+Offensive players now have rebounding stats so the model will know which columns positvely affect the rebounding variable.
+
+```{r}
+testing_data_pbp <- testing_data_pbp %>%
+  left_join(player_reb_data, by = c("playerid_off_player_1" = "player_id")) %>%
+  rename(off_reb1 = off_rebs) %>%
+  select(-def_rebs, - def_rebchances, -games, -minutes) %>%
+  rename(off_rebchances1 = off_rebchances)
+
+testing_data_pbp <- testing_data_pbp %>%
+  left_join(player_reb_data, by = c("playerid_off_player_2" = "player_id")) %>%
+  rename(off_reb2 = off_rebs) %>%
+  select(-def_rebs, - def_rebchances, -games, -minutes) %>%
+  rename(off_rebchances2 = off_rebchances)
+
+testing_data_pbp <- testing_data_pbp %>%
+  left_join(player_reb_data, by = c("playerid_off_player_3" = "player_id")) %>%
+  rename(off_reb3 = off_rebs) %>%
+  select(-def_rebs, - def_rebchances, -games, -minutes) %>%
+  rename(off_rebchances3 = off_rebchances)
+
+testing_data_pbp <- testing_data_pbp %>%
+  left_join(player_reb_data, by = c("playerid_off_player_4" = "player_id")) %>%
+  rename(off_reb4 = off_rebs) %>%
+  select(-def_rebs, - def_rebchances, -games, -minutes) %>%
+  rename(off_rebchances4 = off_rebchances) 
+
+testing_data_pbp <- testing_data_pbp %>%
+  left_join(player_reb_data, by = c("playerid_off_player_5" = "player_id")) %>%
+  rename(off_reb5 = off_rebs) %>%
+  select(-def_rebs, - def_rebchances, -games, -minutes) %>%
+  rename(off_rebchances5 = off_rebchances)
+```
+
+# join defense (test)
+
+Defensive players now have their stats so the model will know which columns negatively affect the oreb variable.
+
+```{r}
+testing_data_pbp <- testing_data_pbp %>%
+  left_join(player_reb_data, by = c("playerid_def_player_1" = "player_id")) %>%
+  select(-off_rebs, - off_rebchances, -games, -minutes) %>%
+  rename(def_reb1 = def_rebs) %>%
+  rename(def_rebchances1 = def_rebchances)
+
+testing_data_pbp <- testing_data_pbp %>%
+  left_join(player_reb_data, by = c("playerid_def_player_2" = "player_id")) %>%
+  select(-off_rebs, - off_rebchances, -games, -minutes) %>%
+  rename(def_reb2 = def_rebs) %>%
+  rename(def_rebchances2 = def_rebchances)
+
+testing_data_pbp <- testing_data_pbp %>%
+  left_join(player_reb_data, by = c("playerid_def_player_3" = "player_id")) %>%
+  select(-off_rebs, - off_rebchances, -games, -minutes) %>%
+  rename(def_reb3 = def_rebs) %>%
+  rename(def_rebchances3 = def_rebchances)
+
+testing_data_pbp <- testing_data_pbp %>%
+  left_join(player_reb_data, by = c("playerid_def_player_4" = "player_id")) %>%
+  select(-off_rebs, - off_rebchances, -games, -minutes) %>%
+  rename(def_reb4 = def_rebs) %>%
+  rename(def_rebchances4 = def_rebchances)
+
+testing_data_pbp <- testing_data_pbp %>%
+  left_join(player_reb_data, by = c("playerid_def_player_5" = "player_id")) %>%
+  select(-off_rebs, - off_rebchances, -games, -minutes) %>%
+  rename(def_reb5 = def_rebs) %>%
+  rename(def_rebchances5 = def_rebchances)
+```
+
+# Remove unnecessary variables from pbp test
+
+Remove player ids from the data set because I have already joined by them so they provide no information now. I am skeptical about secondchance, andone, and inbonue. I am removing second chance because I do not think that this will help the model because the number opportunity it is for the offense will not help them get a rebound. andone also add no value as all of the value are equal to 0. inbonus is being removed because this will have no effect on oreb because whether the offense is in the bonus will not change the offense's chance of getting a rebound. I also removed other identification variables as my data sets have been joined. 
+
+```{r}
+testing_data_pbp <- testing_data_pbp %>%
+  select(-row_type, -off_team_id, -def_team_id, -home_team_id, -away_team_id, -eventdescription, -actiondescription, -playerid_off_player_1:-playerid_def_player_5, -shooter_player_id)
+```
+
+# Subset test data
+
+I subset the training data to tune my models. After tuning, I make sure to include all of the observations to optimize my models.
+
+```{r}
+test_sub_loc <- testing_data_loc %>%
+  filter(as.numeric(game_id) <= 7689)
+
+test_sub_pbp <- testing_data_pbp %>%
+  filter(as.numeric(game_id) <= 7689)
+```
+
+# Join location and pbp data 
+
+I need to add the location of each player on the court to see if the location of the players affects the outcome variable.
+
+```{r}
+test_sub_pbp <- test_sub_pbp %>%
+  left_join(test_sub_loc, by = "playbyplayorder_id")
+
+test_sub_pbp <- test_sub_pbp %>%
+  select(-game_id.x,-game_id.y, -row_type, -secondchance, -andone, -inbonus)
+```
+
+# Feature Engineering on subset
+
+Normally, I give NA values the value of the mean or median. For categorical variables, I normally give the values the mode of the data. However, this is location data so I do not think that it would make sense to add mean or median because 0 does not stand for the absence of location.
+
+```{r}
+test_sub_pbp %>%
+  assert(not_na, everything())
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtShot_loc_x_def_player_1)) 
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtShot_loc_x_def_player_2))
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtShot_loc_x_def_player_3))
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtShot_loc_x_def_player_4))
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtShot_loc_x_def_player_5)) 
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtShot_loc_x_off_player_1)) 
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtShot_loc_x_off_player_2))
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtShot_loc_x_off_player_3))
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtShot_loc_x_off_player_4))
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtShot_loc_x_off_player_5)) 
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtRim_loc_x_off_player_1)) 
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtRim_loc_x_off_player_2)) 
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtRim_loc_x_off_player_3)) 
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtRim_loc_x_off_player_4)) 
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtRim_loc_x_off_player_5)) 
+
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtRim_loc_x_def_player_1)) 
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtRim_loc_x_def_player_2)) 
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtRim_loc_x_def_player_3)) 
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtRim_loc_x_def_player_4)) 
+test_sub_pbp <- test_sub_pbp %>%
+  subset(!is.na(AtRim_loc_x_def_player_5)) 
+```
+
+# log transform of skewed variables
+
+These variables had long tails so I took the log transform of the data to give them a normal distribution. Thus, the tree models will split the data evenly.
+
+```{r}
+test_sub_pbp$off_reb1 <- log(test_sub_pbp$off_reb1)
+test_sub_pbp$off_reb2 <- log(test_sub_pbp$off_reb2)
+test_sub_pbp$off_reb3 <- log(test_sub_pbp$off_reb3)
+test_sub_pbp$off_reb4 <- log(test_sub_pbp$off_reb4)
+test_sub_pbp$off_reb5 <- log(test_sub_pbp$off_reb5)
+
+
+test_sub_pbp$def_reb1 <- log(test_sub_pbp$def_reb1)
+test_sub_pbp$def_reb2 <- log(test_sub_pbp$def_reb2)
+test_sub_pbp$def_reb3 <- log(test_sub_pbp$def_reb3)
+test_sub_pbp$def_reb4 <- log(test_sub_pbp$def_reb4)
+test_sub_pbp$def_reb5 <- log(test_sub_pbp$def_reb5)
+
+```

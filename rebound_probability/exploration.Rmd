@@ -1,0 +1,108 @@
+---
+title: "Exploration"
+output: github_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r}
+library(tidyverse)
+library(assertr)
+```
+
+# Read train data pbp
+
+```{r}
+training_data_pbp <- read_csv("./rebound_probability/data/training_data_pbp.csv", 
+    col_types = cols(X1 = col_skip(), away_team_id = col_character(), 
+        def_team_id = col_character(), game_id = col_character(), 
+        home_team_id = col_character(), off_team_id = col_character(), 
+        playbyplayorder_id = col_character(), 
+        playerid_off_player_1 = col_character(), 
+        playerid_off_player_2 = col_character(), 
+        playerid_off_player_3 = col_character(), 
+        playerid_off_player_4 = col_character(),
+        playerid_off_player_5 = col_character(),
+        playerid_def_player_1 = col_character(),
+        playerid_def_player_2 = col_character(),
+        playerid_def_player_3 = col_character(),
+        playerid_def_player_4 = col_character(),
+        playerid_def_player_5 = col_character(),
+        reb_player_id = col_character(), 
+        shooter_player_id = col_character()))
+```
+
+# Read train data loc
+
+```{r}
+training_data_loc <- read_csv("./rebound_probability/data/training_data_loc.csv", 
+    col_types = cols(X1 = col_skip(), game_id = col_character(), 
+        playbyplayorder_id = col_character()))
+```
+
+# Player Position Data
+
+```{r}
+player_pos_data <- read_csv("./rebound_probability/data/player_pos_data.csv", 
+    col_types = cols(X1 = col_character(), 
+        player_id = col_character(), position = col_factor(levels = c("1", 
+            "2", "3", "4", "5")), position2 = col_factor(levels = c("1", 
+            "2", "3", "4", "5"))))%>%
+  select(-X1)
+```
+
+# Player Rebounding Totals
+
+```{r}
+player_reb_data <- read_csv("./rebound_probability/data/player_reb_data.csv", 
+    col_types = cols(X1 = col_skip(), def_rebchances = col_integer(), 
+        def_rebs = col_integer(), games = col_integer(), 
+        off_rebchances = col_integer(), off_rebs = col_integer(), 
+        player_id = col_character()))
+```
+
+I am just going to do some basic things to familiarize myself with the data.
+
+# Play-by-play
+
+```{r}
+dim(training_data_pbp)
+
+colnames(training_data_pbp)
+```
+
+```{r}
+head(training_data_pbp)
+```
+
+In the play-by-play data set I have the `reboffensive` variable which is going to be my dependent variable when I run the models on the data. It has a success rate of `r round(sum(training_data_pbp$reboffensive)/length(training_data_pbp$reboffensive),3)`. Each ID variable will be important as I will need those to join my data sets at a later time. After joining, I will discard them as they are not metric and could hinder the performance of the model. I don't think that I will need `row_type` or `f.oreb` because `row_type` has string values which will not be useful in predictions. The made/miss/attempted fg/ft variables will be important because made shots will obviously not have a rebound to get. This will help the model determine which shots have a rebound probability of 0%. `secondchance` could be a helpful variable because the higher the value, the higher the number of chances to get the rebound. Higher values could result in the defense being out of position allowing the offense and easier time getting the rebound. `andone` is a necessary variable because when this value is equal to 1, then there is definitely no chance of the offense getting the rebound. I don't think that I'll need `inbonus` as this does not affect the chance of a shot being missed or the offenses ability to get the rebound. `eventdescription` and `actiondescription` aren't necessary variables because they are characters instead of numbers.
+
+# Location
+
+```{r}
+dim(training_data_loc)
+
+colnames(training_data_loc)
+```
+
+The location data does not leave me much room to reduce the data set as each variable would be important for predicting the probability of the offensive team getting a rebound on any given shot. This data set contains the location of each player on the court which will be necessary in predicting the probability of the offensive team getting a rebound on any given shot.
+
+# Rebound
+
+```{r}
+dim(player_reb_data)
+
+colnames(player_reb_data)
+```
+
+All variables will be necessary in this data set. Those players with many minutes and few rebounds will not be predicted to get a rebound. Those with many rebound chances and few rebounds also will not be predicted to get a rebound.
+
+# Position
+
+```{r}
+dim(player_pos_data)
+
+colnames(player_pos_data)
+```
+
+I am not sure about this data set. I don't think the position will be as important as location and rebounding statistics but I will join it with the main data set and determine if it is necessary to have.

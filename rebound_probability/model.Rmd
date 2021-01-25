@@ -1,0 +1,236 @@
+---
+title: "Model"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(h2o)
+library(tidyverse)
+library(assertr)
+library(glue)
+library(lemon)
+knit_print.data.frame <- lemon_print
+library(knitr)
+h2o.init(nthreads = -1, #Number of threads -1 means use all cores on your machine
+         max_mem_size = "8G")  #max mem size is the maximum memory to allocate to H2O
+```
+
+I chose the ensemble with the neural network and random forest but I would like to walk through my decision process.
+
+# Modeling
+
+Use h2o to provide high-speed model solutions and interactive model solutions.
+
+# h20 method RF
+
+I first try random forest.
+
+LogLoss:  0.307463
+
+```{r}
+sub_pbp <- transform(
+  sub_pbp,
+  reboffensive=as.factor(reboffensive),
+  ftmade = as.factor(ftmade),
+  ftmissed = as.factor(ftmissed),
+  fg2made = as.factor(fg2made),
+  fg2missed = as.factor(fg2missed),
+  fg2attempted = as.factor(fg2attempted),
+  fg3made = as.factor(fg3made),
+  fg3missed = as.factor(fg3missed),
+  fg3attempted = as.factor(fg3attempted),
+  rebdefensive = as.factor(rebdefensive)
+)
+
+test_sub_pbp <- transform(
+  test_sub_pbp,
+  ftmade = as.factor(ftmade),
+  ftmissed = as.factor(ftmissed),
+  fg2made = as.factor(fg2made),
+  fg2missed = as.factor(fg2missed),
+  fg2attempted = as.factor(fg2attempted),
+  fg3made = as.factor(fg3made),
+  fg3missed = as.factor(fg3missed),
+  fg3attempted = as.factor(fg3attempted)
+)
+
+sub_pbp <- sub_pbp %>%
+  select(-rebdefensive)
+
+h2o.training_data_pbp <- as.h2o(sub_pbp)
+h2o.levels(h2o.training_data_pbp$reboffensive)
+y <- "reboffensive"
+x <- setdiff(names(sub_pbp), c(y))
+
+rf_fit2 <- h2o.randomForest(x = x,
+                            y = y,
+                            training_frame = h2o.training_data_pbp,
+                            model_id = "rf_fit2",
+                            #validation_frame = valid,  #only used if stopping_rounds > 0
+                            ntrees = 100,
+                            seed = 1,
+                            nfolds = 5,
+                            keep_cross_validation_predictions = TRUE)
+```
+
+Increasing the number of trees did not decrease the log loss value so I need to try other models.
+
+# gradient boosting
+
+Random forest did not provide a good log loss number so I try gradient boosting.
+
+LogLoss:  0.2985658
+
+```{r}
+gbm_fit <- h2o.gbm(x = x,
+                       y = y,
+                       model_id = "gbm_fit",
+                       training_frame = h2o.training_data_pbp,
+                       ntrees = 100,
+                       seed = 1,
+                   keep_cross_validation_predictions = TRUE,
+                   nfolds = 5)
+```
+
+# Neural Network
+
+Random forest and gradient boosting do not provide good log loss numbers so I try a neural network.
+
+LogLoss:  0.3158223
+
+```{r}
+neural_net <- h2o.deeplearning(x = x,
+                               y = y,
+                               model_id = "nn_fit",
+                               training_frame = h2o.training_data_pbp,
+                               seed = 1,
+                               keep_cross_validation_predictions = TRUE,
+                               nfolds = 5)
+```
+
+# Ensemble Methods
+
+None of the models individually performed well so I will use a combination of ensemble methods to improve the log loss numbers.
+
+## Ensemble method (GBM and neural)
+
+First ensemble method I try is with the GBM and neural network.
+
+LogLoss:  0.2934947
+
+```{r}
+gbm_neural <- h2o.stackedEnsemble(x = x,
+                                y = y,
+                                training_frame = h2o.training_data_pbp,
+                                base_models = list(gbm_fit, neural_net))
+
+```
+
+## Ensemble method (GBM, rf)
+
+I then try the ensemble method with GBM and random forest.
+
+LogLoss:  0.1967663
+
+```{r}
+gbm_rf <- h2o.stackedEnsemble(x = x,
+                                y = y,
+                                training_frame = h2o.training_data_pbp,
+                                base_models = list(gbm_fit, rf_fit2))
+```
+
+## Ensemble method (neural, rf)
+
+The other combination of 2 models that I use is with neural network and random forest.
+
+LogLoss:  0.133827
+
+```{r}
+neural_rf <- h2o.stackedEnsemble(x = x,
+                                y = y,
+                                training_frame = h2o.training_data_pbp,
+                                base_models = list(neural_net, rf_fit2))
+```
+
+### Ensemble method (GBM, neural, rf)
+
+I wanted to see if an ensemble method of all three models would provide the best log loss numbers.
+
+LogLoss:  0.2132232
+
+```{r}
+ensemble <- h2o.stackedEnsemble(x = x,
+                                y = y,
+                                training_frame = h2o.training_data_pbp,
+                                base_models = list(gbm_fit, neural_net, rf_fit2))
+```
+
+# This is the model I chose and would like to graded
+
+The model that provided the best log loss numbers was the ensemble model with neural network and random forest. This is the model that I would prefer get graded. 
+
+# Top Predictors
+
+I am going to look at the important factors for the two models that make up the ensemble model. Then I will plot the features based on scaled importance. 
+
+```{r render=lemon_print}
+h2o.varimp(rf_fit2) %>%
+  select(variable, scaled_importance) %>%
+  mutate(scaled_importance = round(scaled_importance, 2)) %>%
+  head(10) %>%
+  kable()
+
+h2o.varimp(neural_net) %>%
+  select(variable, scaled_importance) %>%
+  mutate(scaled_importance = round(scaled_importance, 2)) %>%
+  head(10) %>%
+  kable()
+
+rf_features <- h2o.varimp(rf_fit2) %>%
+  select(variable, scaled_importance) %>%
+  mutate(scaled_importance = round(scaled_importance, 2))
+
+rf_features <- rf_features %>%
+  arrange(desc(scaled_importance)) %>%
+  head(10)
+
+rf_features$variable <- factor(rf_features$variable, levels = rf_features$variable[order(desc(rf_features$scaled_importance))])
+
+ggplot(rf_features, aes(x = variable, y = scaled_importance)) +
+  geom_col() +
+  theme_classic() +
+  labs(
+    title = "Important Variables for Random Forest",
+    x = "Variables",
+    y = "Importance",
+    subtitle = "These are the top 10 features for the random forest model ranked by\nscaled importance to the model"
+  )+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=0.95),
+        axis.text = element_text(size =10),
+        plot.subtitle=element_text(size=8, color = "grey"))
+```
+
+# Calculate Values
+
+Predict values into the testing data set using the nerual network and random forest ensemble method as this method provided the best log loss numbers.
+
+```{r}
+h2o.test_sub_pbp <- as.h2o(test_sub_pbp)
+off_reb <- as.data.frame(h2o.predict(neural_rf, h2o.test_sub_pbp))
+
+test_sub_pbp <- cbind(test_sub_pbp, off_reb)
+```
+
+# export as csv
+
+Export the data set into a .csv file to turn in for grading.
+
+```{r}
+test_sub_pbp <- test_sub_pbp %>%
+  rename(prediction = p1)%>%
+  select(playbyplayorder_id, prediction)
+  
+write.csv(test_sub_pbp,"testing_predictions.csv", row.names = FALSE)
+```

@@ -1,0 +1,208 @@
+---
+title: "Import Data"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+# Problem
+
+In basketball and many other sports, the goal of the game is to score more points than the other team. One way to do this is to limit the other team's possessions. This could potentially limit your team's possessions. Thus your possessions to the other team's possessions will be 1:1. Offensive rebounds are a way to increase this ratio in your favor, 2:1,3:1,...,N:1. What if we were able to determine the chance of us getting an offensive rebound? Then we could use the necessary tactics to increase our chances of getting an offensive rebound if they were low.
+
+# Libraries
+
+```{r}
+library(tidyverse)
+library(assertr)
+library(h2o)
+library(glue)
+library(lemon)
+knit_print.data.frame <- lemon_print
+library(knitr)
+h2o.init(nthreads = -1, #Number of threads -1 means use all cores on your machine
+         max_mem_size = "8G")  #max mem size is the maximum memory to allocate to H2O
+```
+
+# Read train data pbp
+
+```{r}
+training_data_pbp <- read_csv("training_data_pbp.csv", 
+    col_types = cols(X1 = col_skip(), away_team_id = col_character(), 
+        def_team_id = col_character(), game_id = col_character(), 
+        home_team_id = col_character(), off_team_id = col_character(), 
+        playbyplayorder_id = col_character(), 
+        playerid_off_player_1 = col_character(), 
+        playerid_off_player_2 = col_character(), 
+        playerid_off_player_3 = col_character(), 
+        playerid_off_player_4 = col_character(),
+        playerid_off_player_5 = col_character(),
+        playerid_def_player_1 = col_character(),
+        playerid_def_player_2 = col_character(),
+        playerid_def_player_3 = col_character(),
+        playerid_def_player_4 = col_character(),
+        playerid_def_player_5 = col_character(),
+        reb_player_id = col_character(), 
+        shooter_player_id = col_character()))
+```
+
+# train pbp description
+
+name - description
+game_id - ID for the game
+playbyplayorder_id - ID for the play by play event in this row
+row_type - Type of play by play event, shot or final free throw (e.g. the last free throw taken during a trip to the line that could be rebounded if missed)
+F.OREB - Whether a shot was offensive rebounded (Yes or No)
+REBOFFENSIVE - Whether a shot was offensive rebounded (0 = no, 1 = yes)
+REBDEFFENSIVE - Whether a shot was defensive rebounded (0 = no, 1 = yes)
+OFF_TEAM_ID - Team ID of the team on offense
+DEF_TEAM_ID - Team ID of the team on defense
+HOME_TEAM_ID - Team ID of the home team
+AWAY_TEAM_ID - Team ID of the away team
+FTMADE - Did this play result in a made free throw? (0 = no, 1 = yes)
+FTMISSED - Did this play result in a missed free throw? (0 = no, 1 = yes)
+FG2MADE - Did this play result in a made 2 point attempt? (0 = no, 1 = yes)
+FG2MISSED - Did this play result in a missed 2 point attempt? (0 = no, 1 = yes)
+FG2ATTEMPTED - Was a two point shot attempted on this play? (0 = no, 1 = yes)
+FG3MADE - Did this play result in a made 3 point attempt? (0 = no, 1 = yes)
+FG3MISSED - Did this play result in a missed 3 point attempt? (0 = no, 1 = yes)
+FG3ATTEMPTED - Was a three point shot attempted on this play? (0 = no, 1 = yes)
+SECONDCHANCE - Indicator for a second chance opportunity. Increments for each subsequent chance following another offensive rebound. (e.g. if there are 3 shots on a possession, the first will have 0, the second will have 1,the third will have 2)
+ANDONE - Was this play a shooting foul on made shot? (0 = no, 1 = yes)
+INBONUS - Is the offensive team in the bonus? (0 = no, 1 = yes)
+EVENTDESCRIPTION - A description of the play by play event 
+ACTIONDESCRIPTION - A more specific description of the play by play event
+SHOOTER_PLAYER_ID - The player_id of the shooter
+REB_PLAYER_ID - The player_id of the rebounder
+PLAYER_ID_OFF_PLAYER_1 - The ID of one of the 5 offensive players on the court (no particular order)
+PLAYER_ID_OFF_PLAYER_2 - The ID of one of the 5 offensive players on the court (no particular order)
+PLAYER_ID_OFF_PLAYER_3 - The ID of one of the 5 offensive players on the court (no particular order)
+PLAYER_ID_OFF_PLAYER_4 - The ID of one of the 5 offensive players on the court (no particular order)
+PLAYER_ID_OFF_PLAYER_5 - The ID of one of the 5 offensive players on the court (no particular order)
+PLAYER_ID_DEF_PLAYER_1 - The ID of one of the 5 defensive players on the court (no particular order)
+PLAYER_ID_DEF_PLAYER_2 - The ID of one of the 5 defensive players on the court (no particular order)
+PLAYER_ID_DEF_PLAYER_3 - The ID of one of the 5 defensive players on the court (no particular order)
+PLAYER_ID_DEF_PLAYER_4 - The ID of one of the 5 defensive players on the court (no particular order)
+PLAYER_ID_DEF_PLAYER_5 - The ID of one of the 5 defensive players on the court (no particular
+order)
+
+# Read train data loc
+
+```{r}
+training_data_loc <- read_csv("training_data_loc.csv", 
+    col_types = cols(X1 = col_skip(), game_id = col_character(), 
+        playbyplayorder_id = col_character()))
+```
+
+name - description
+GAME_ID - ID for the game
+PLAYBYPLAYORDER_ID - ID for the play by play event in this row.
+ROW_TYPE - Type of play by play event, shot or final free throw (e.g. the last free throw taken during a trip to the line that could be rebounded if missed)
+ATSHOT_LOC_X_OFF_PLAYER_1 - The x coordinate of the location of Offensive Player 1 at the time of the shot
+ATSHOT_LOC_Y_OFF_PLAYER_1 - The y coordinate of the location of Offensive Player 1 at the time of the shot
+ATRIM_LOC_X_OFF_PLAYER_1 - The x coordinate of the location of Offensive Player 1 at the time the ball hit the rim
+ATRIM_LOC_Y_OFF_PLAYER_1 - The y coordinate of the location of Offensive Player 1 at the time the ball hit the rim
+ATSHOT_LOC_X_OFF_PLAYER_2 - The x coordinate of the location of Offensive Player 1 at the time of the shot
+ATSHOT_LOC_Y_OFF_PLAYER_2 - The y coordinate of the location of Offensive Player 1 at the time of the shot
+ATRIM_LOC_X_OFF_PLAYER_2 - The x coordinate of the location of Offensive Player 1 at the time the ball hit the rim
+ATRIM_LOC_Y_OFF_PLAYER_2 - The y coordinate of the location of Offensive Player 1 at the time the ball hit the rim
+ATSHOT_LOC_X_OFF_PLAYER_3 - The x coordinate of the location of Offensive Player 1 at the time of the shot
+ATSHOT_LOC_Y_OFF_PLAYER_3 - The y coordinate of the location of Offensive Player 1 at the time of the shot
+ATRIM_LOC_X_OFF_PLAYER_3 - The x coordinate of the location of Offensive Player 1 at the time the ball hit the rim
+ATRIM_LOC_Y_OFF_PLAYER_3 - The y coordinate of the location of Offensive Player 1 at the time the ball hit the rim
+ATSHOT_LOC_X_OFF_PLAYER_4 - The x coordinate of the location of Offensive Player 1 at the time of the shot
+ATSHOT_LOC_Y_OFF_PLAYER_4 - The y coordinate of the location of Offensive Player 1 at the time of the shot
+ATRIM_LOC_X_OFF_PLAYER_4 - The x coordinate of the location of Offensive Player 1 at the time the ball hit the rim
+ATRIM_LOC_Y_OFF_PLAYER_4 - The y coordinate of the location of Offensive Player 1 at the time the ball hit the rim
+ATSHOT_LOC_X_OFF_PLAYER_5 - The x coordinate of the location of Offensive Player 1 at the time of the shot
+ATSHOT_LOC_Y_OFF_PLAYER_5 - The y coordinate of the location of Offensive Player 1 at the time of the shot
+ATRIM_LOC_X_OFF_PLAYER_5 - The x coordinate of the location of Offensive Player 1 at the time the ball hit the rim
+ATRIM_LOC_Y_OFF_PLAYER_5 - The y coordinate of the location of Offensive Player 1 at the time the ball hit the rim
+ATSHOT_LOC_X_DEF_PLAYER_1 - The x coordinate of the location of defensive Player 1 at the time of the shot
+ATSHOT_LOC_Y_DEF_PLAYER_1 - The y coordinate of the location of defensive Player 1 at the time of the shot
+ATRIM_LOC_X_DEF_PLAYER_1 - The x coordinate of the location of defensive Player 1 at the time the ball hit the rim
+ATRIM_LOC_Y_DEF_PLAYER_1 - The y coordinate of the location of defensive Player 1 at the time the ball hit the rim
+ATSHOT_LOC_X_DEF_PLAYER_2 - The x coordinate of the location of defensive Player 1 at the time of the shot
+ATSHOT_LOC_Y_DEF_PLAYER_2 - The y coordinate of the location of defensive Player 1 at the time of the shot
+ATRIM_LOC_X_DEF_PLAYER_2 - The x coordinate of the location of defensive Player 1 at the time the ball hit the rim
+ATRIM_LOC_Y_DEF_PLAYER_2 - The y coordinate of the location of defensive Player 1 at the time the ball hit the rim
+ATSHOT_LOC_X_DEF_PLAYER_3 - The x coordinate of the location of defensive Player 1 at the time of the shot
+ATSHOT_LOC_Y_DEF_PLAYER_3 - The y coordinate of the location of defensive Player 1 at the time of the shot
+ATRIM_LOC_X_DEF_PLAYER_3 - The x coordinate of the location of defensive Player 1 at the time the ball hit the rim
+ATRIM_LOC_Y_DEF_PLAYER_3 - The y coordinate of the location of defensive Player 1 at the time the ball hit the rim
+ATSHOT_LOC_X_DEF_PLAYER_4 - The x coordinate of the location of defensive Player 1 at the time of the shot
+ATSHOT_LOC_Y_DEF_PLAYER_4 - The y coordinate of the location of defensive Player 1 at the time of the shot
+ATRIM_LOC_X_DEF_PLAYER_4 - The x coordinate of the location of defensive Player 1 at the time the ball hit the rim
+ATRIM_LOC_Y_DEF_PLAYER_4 - The y coordinate of the location of defensive Player 1 at the time the ball hit the rim
+ATSHOT_LOC_X_DEF_PLAYER_5 - The x coordinate of the location of defensive Player 1 at the time of the shot
+ATSHOT_LOC_Y_DEF_PLAYER_5 - The y coordinate of the location of defensive Player 1 at the time of the shot
+ATRIM_LOC_X_DEF_PLAYER_5 - The x coordinate of the location of defensive Player 1 at the time the ball hit the rim
+ATRIM_LOC_Y_DEF_PLAYER_5 - The y coordinate of the location of defensive Player 1 at the time the ball hit the rim
+
+# Player Position Data
+
+```{r}
+player_pos_data <- read_csv("player_pos_data.csv", 
+    col_types = cols(X1 = col_character(), 
+        player_id = col_character(), position = col_factor(levels = c("1", 
+            "2", "3", "4", "5")), position2 = col_factor(levels = c("1", 
+            "2", "3", "4", "5"))))%>%
+  select(-X1)
+```
+
+# Player position description
+
+name - description
+PLAYER_ID - An ID identifying the player
+POSITION - The player's primary position
+POSITION2 - The player's secondary position (if applicable)
+
+# Player Rebounding Totals
+
+```{r}
+player_reb_data <- read_csv("player_reb_data.csv", 
+    col_types = cols(X1 = col_skip(), def_rebchances = col_integer(), 
+        def_rebs = col_integer(), games = col_integer(), 
+        off_rebchances = col_integer(), off_rebs = col_integer(), 
+        player_id = col_character()))
+```
+
+## Player rebounding description
+
+name - description
+PLAYER_ID - An ID identifying the player
+GAMES - The number of games this player played in the games that are included in both the training and testing data.
+MINUTES -The number of minutes this player played in the games that are included in both the training and testing data.
+OFF_REBOUNDS - The number of offensive rebounds this player grabbed in the games that are included in both the training and testing data.
+DEF_REBOUNDS - The number of defensive rebounds this player grabbed in the games that are included in both the training and testing data.
+OFF_REBCHANCES - The number of chances this player had to secure an offensive rebound during the games that are included in both the training and testing data. Note that a player simply needs to be on offense for a missed shot to record an "off_rebchance". This variable does not indicate, e.g., whether the player was in position to potentially secure a rebound.
+DEF_REBCHANCES - The number of chances this player had to secure a defensive rebound during the games that are included in both the training and testing data. Note that a player simply needs to be on defense for a missed shot to record a "def_rebchance". This variable does not indicate, e.g., whether the player was in position to potentially secure a rebound.
+
+# Load testing pbp data
+
+```{r}
+testing_data_pbp <- read_csv("testing_data_pbp.csv", 
+    col_types = cols(X1 = col_skip(), away_team_id = col_character(), 
+        def_team_id = col_character(), game_id = col_character(), 
+        home_team_id = col_character(), off_team_id = col_character(), 
+        playbyplayorder_id = col_character(), 
+        shooter_player_id = col_character(),
+        playbyplayorder_id = col_character(), 
+        playerid_off_player_1 = col_character(), 
+        playerid_off_player_2 = col_character(), 
+        playerid_off_player_3 = col_character(), 
+        playerid_off_player_4 = col_character(),
+        playerid_off_player_5 = col_character(),
+        playerid_def_player_1 = col_character(),
+        playerid_def_player_2 = col_character(),
+        playerid_def_player_3 = col_character(),
+        playerid_def_player_4 = col_character(),
+        playerid_def_player_5 = col_character()))
+```
+
+# Load testing location data
+```{r}
+testing_data_loc <- read_csv("testing_data_loc.csv", 
+    col_types = cols(X1 = col_skip(), game_id = col_character(),
+                     playbyplayorder_id = col_character()))
+```
+
