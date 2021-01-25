@@ -2,6 +2,7 @@
 
 * [Fantasy Draft](https://github.com/mattflaherty97/fantasy_basketball/tree/main/fantasy_draft)
 * [Grizzlies Optimal Lineups](https://github.com/mattflaherty97/fantasy_basketball/tree/main/grizzlies_lineups)
+* [Rebound Probability](https://github.com/mattflaherty97/nba_basketball/tree/main/rebound_probability)
 
 # Introduction
 
