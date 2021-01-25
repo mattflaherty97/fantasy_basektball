@@ -1,0 +1,33 @@
+---
+title: "Cluster Analysis"
+output: github_documents
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+library(readr)
+library(janitor)
+library(factoextra)
+library(stats)
+
+```
+
+# Get 2020 player data
+
+```{r}
+nba100_2020 <- read_csv("data/nba100_2020.csv")
+nba100_2020 <- clean_names(nba100_2020)
+
+nba100_2020 <- nba100_2020[!duplicated(nba100_2020$player),]
+
+nba100_2020 <- nba100_2020 %>%
+  mutate(year = "2020")
+
+fb_data <- as.data.frame(fb_data)
+
+row.names(ff_data) <- ff_data$player_name
+```
+
+

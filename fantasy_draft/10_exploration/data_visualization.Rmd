@@ -1,0 +1,173 @@
+---
+title: "Data Visualization"
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+library(tidyverse)
+library(readr)
+
+fantasy <- read_csv("data/fantasy.csv")
+```
+
+```{r bpm_fpts}
+ggplot(fantasy, aes(bpm, fpts_100)) +
+  geom_point() +
+  annotate(geom = "text", x = -20, y = -25, label = paste("r = ",format(round(cor(fantasy$bpm, fantasy$fpts_100),4))), colour = "blue") +
+  labs(
+    title = "Fantasy Points vs BPM",
+    x = "BPM",
+    y = "Fantasy Points"
+  ) +
+  theme_classic() +
+  geom_smooth(method = "lm") 
+```
+
+```{r per_fpts}
+ggplot(fantasy, aes(per, fpts_100)) +
+  geom_point()+
+  annotate(geom = "text", x = -5, y = -10, label = paste("r = ",format(round(cor(fantasy$per, fantasy$fpts_100),4))), colour = "blue") +
+  labs(
+    title = "Fantasy Points vs PER",
+    x = "PER",
+    y = "Fantasy Points"
+  ) +
+  theme_classic() +
+  geom_smooth(method = "lm") 
+  
+
+```
+
+```{r obpm_fpts}
+ggplot(fantasy, aes(obpm, fpts_100)) +
+  geom_point()+
+  annotate(geom = "text", x = -5, y = -10, label = paste("r = ",format(round(cor(fantasy$obpm, fantasy$fpts_100),4))), colour = "blue") +
+  labs(
+    title = "Fantasy Points vs OBPM",
+    x = "OBPM",
+    y = "Fantasy Points"
+  ) +
+  theme_classic() +
+  geom_smooth(method = "lm") 
+  
+```
+
+```{r pts_fpts}
+ggplot(fantasy, aes(pts, fpts_100)) +
+  geom_point()+
+  annotate(geom = "text", x = 45, y = 30, label = paste("r = ",format(round(cor(fantasy$pts, fantasy$fpts_100),4))), colour = "blue") +
+  labs(
+    title = "Fantasy Points vs Points",
+    x = "Points",
+    y = "Fantasy Points"
+  ) +
+  theme_classic() +
+  geom_smooth(method = "lm") 
+  
+```
+
+# BPM + PER
+
+BPM and PER both have a strong correlation with fantasy points so I add the two statistics together and test the correlation. If it is a stronger correlation than PER (`r format(round(cor(fantasy$per, fantasy$fpts_100),4))`), then I will use BPM+PER to determine which players to pickup.
+
+```{r bpm_per}
+fantasy <- fantasy %>%
+  mutate(bpm_per = bpm +per)
+
+ggplot(fantasy, aes(bpm_per, fpts_100)) +
+  geom_point() +
+  annotate(geom = "text", x = 0, y = 50, label = paste("r = ",format(round(cor(fantasy$bpm_per, fantasy$fpts_100),4))), colour = "blue") +
+  labs(
+    title = "Fantasy Points vs BPM+PER",
+    x = "BPM+PER",
+    y = "Fantasy Points"
+  ) +
+  theme_classic() +
+  geom_smooth(method = "lm") 
+```
+
+BPM+PER has a correlation of `r format(round(cor(fantasy$bpm_per, fantasy$fpts_100),4))`. This is about the same as the correlation PER has with fantasy points but still less so I will just use PER instead of BPM+PER
+
+## Multiply by coefficient
+
+What if I multiply the variables by their correlation coefficient when measured individually against `fpts`?
+
+```{r}
+fantasy <- fantasy %>%
+  mutate(measure = (0.8362*bpm) + (0.9206*per))
+
+ggplot(fantasy, aes(measure, fpts_100)) +
+  geom_point() +
+  annotate(geom = "text", x = 0, y = 50, label = paste("r = ",format(round(cor(fantasy$measure, fantasy$fpts_100),4))), colour = "blue") +
+  labs(
+    title = "Fantasy Points vs BPM+PER",
+    x = "BPM+PER",
+    y = "Fantasy Points"
+  ) +
+  theme_classic() +
+  geom_smooth(method = "lm") 
+```
+
+I get a correlation coefficient of `r format(round(cor(fantasy$measure, fantasy$fpts_100),4))`. Still less than that of `per` and `fpts`; therefore, I still have reason to use `per` alone.
+
+# Linear Regression
+
+Now I will get correlation coefficients using a linear regression to multiply the statistics by.
+
+## Scale the data
+
+It is important to scale the data so the variables are within the same range and neither variable can outweigh the other.
+
+```{r}
+fantasy$bpm <- scale(fantasy$bpm)
+
+fantasy$per <- scale(fantasy$per)
+
+fantasy$fpts_100 <- scale(fantasy$fpts_100)
+```
+
+## Linear Regression Model
+
+Now that I have scaled my data, I can use a linear regression model to get correlation coefficients for the variables. I will take these coefficients and multiply the respective variable by the coefficient.
+
+```{r}
+lm(data = fantasy, fpts_100~bpm + per)
+
+fantasy <- fantasy %>%
+  mutate(coeff = (7.400e-02*bpm) + (8.546e-01*per))
+
+ggplot(fantasy, aes(coeff, fpts_100)) +
+  geom_point() +
+  annotate(geom = "text", x = -2, y = 5, label = paste("r = ",format(round(cor(fantasy$coeff, fantasy$fpts_100),4))), colour = "blue") +
+  labs(
+    title = "Fantasy Points vs BPM+PER",
+    x = "BPM+PER",
+    y = "Fantasy Points"
+  ) +
+  theme_classic() +
+  geom_smooth(method = "lm") 
+```
+
+Doing this gives me a correlation of `rformat(round(cor(fantasy$coeff, fantasy$fpts_100),4))` which is greater than `per` but not by a significant amount. 
+
+Taking the mean of the two variables and its respective correlation coefficients to if that has any impact.
+
+```{r}
+fantasy <- fantasy %>%
+  mutate(mean_bpm_per = ((7.400e-02*bpm) + (8.546e-01*per))/2)
+
+ggplot(fantasy, aes(mean_bpm_per, fpts_100)) +
+  geom_point() +
+  annotate(geom = "text", x = -2, y = 5, label = paste("r = ",format(round(cor(fantasy$mean_bpm_per, fantasy$fpts_100),4))), colour = "blue") +
+  labs(
+    title = "Fantasy Points vs BPM+PER",
+    x = "BPM+PER",
+    y = "Fantasy Points"
+  ) +
+  theme_classic() +
+  geom_smooth(method = "lm") 
+```
+
+I can see that it does not have any impact.

@@ -18,7 +18,7 @@ library(knitr)
 h2o.init(nthreads = -1, #Number of threads -1 means use all cores on your machine
          max_mem_size = "8G")  #max mem size is the maximum memory to allocate to H2O
 
-fantasy <- read_csv("../data/fantasy.csv")
+fantasy <- read_csv("./data/fantasy.csv")
 fantasy <- as.data.frame(fantasy)
 
 # no non-numeric data
@@ -56,14 +56,34 @@ x <- setdiff(names(train), c(y))
 
 # Run models
 
-```{r rf}
+## Optimize model
+```{r optimize}
+# Optimize GLM
+grid_glm <- h2o.grid("glm", 
+         grid_id = "grid_glm", 
+         x = x,
+         y = y,
+         training_frame = h2o.train_data,
+         hyper_params = list(alpha = seq(0.1,0.9,0.1),
+                             lambda = 1e-4,1e-5,1e-6,1e-7,1e-8),
+         is_supervised = TRUE,
+         search_criteria = list(strategy = "RandomDiscrete",
+                                seed = 42,
+                                stopping_metric = "AUTO",
+                                stopping_tolerance = 0.001,
+                                stopping_round = 5))
+```
+
+## Run model
+```{r glm}
 rf_fit2 <- h2o.glm(x = x,
-                            y = y,
-                            training_frame = h2o.train_data,
-                            model_id = "rf_fit2",
-                            #validation_frame = valid,  #only used if stopping_rounds > 0
-                            nfolds = 10,
-                   alpha = 0.5)
+                   y = y,
+                   training_frame = h2o.train_data,
+                   model_id = "rf_fit2",
+                   #validation_frame = valid,  #only used if stopping_rounds > 0
+                   nfolds = 10,
+                   alpha = ,
+                   lambda = )
 
 rf_fit2@model$cross_validation_metrics
 ```

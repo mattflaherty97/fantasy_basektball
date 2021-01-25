@@ -153,6 +153,12 @@ ggplot(fantasy, aes(pts, fpts_100)) +
   geom_smooth(method = "lm") 
 ```
 
+# Add scores to original data frame
+
+```{r}
+fantasy_scores <- cbind(fantasy, pca_out$x[,c(1:4)])
+```
+
 # Conclusion
 
 PER and BPM have the strongest correlation with fantasy points in the data set. Therefore, fantasy managers can use these statistics to draft their players and should see good production from the players. BPM and PER most likely are the strongest correlated variables to fantasy points because these features encompass a well-rounded game. In other words, players who do well in points, rebound, assists, and defense will a good BPM and PER.
